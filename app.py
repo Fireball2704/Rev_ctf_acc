@@ -60,7 +60,9 @@ def index():
                         error = FLAG
                         break
         except MySQLdb.Error as e:
-            error = f"SQL Error: {e}"
+         error = f"SQL Error: {e}"
+         print(error)  # Debugging
+
 
     return render_template("index.html", users=users, error=error)
 
