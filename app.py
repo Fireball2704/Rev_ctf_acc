@@ -8,9 +8,11 @@ app = Flask(__name__)
 db = MySQLdb.connect(
     host=os.getenv("DB_HOST"),
     user=os.getenv("DB_USER"),
-    passwd=os.getenv("DB_PASSWORD"),
-    db=os.getenv("DB_NAME")
+    passwd=os.getenv("DB_PASS"),
+    db=os.getenv("DB_NAME"),
+    port=int(os.getenv("DB_PORT"))  # Convert port to integer
 )
+
 cursor = db.cursor()
 
 FLAG = "acc_ctf {h@rd_w0rk_p@ys}"  # Your flag
@@ -42,4 +44,4 @@ def index():
     return render_template("index.html", users=users, error=error)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
