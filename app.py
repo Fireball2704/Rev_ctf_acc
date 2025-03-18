@@ -1,20 +1,19 @@
+import os
 from flask import Flask, render_template, request
 import MySQLdb
-import os
 
 app = Flask(__name__)
 
-# Use Railway-provided MySQL credentials
+# Database connection using environment variables
 db = MySQLdb.connect(
     host=os.getenv("DB_HOST"),
     user=os.getenv("DB_USER"),
-    passwd=os.getenv("DB_PASS"),
-    db=os.getenv("DB_NAME"),
-    port=int(os.getenv("DB_PORT", 3306))  # Default MySQL port
+    passwd=os.getenv("DB_PASSWORD"),
+    db=os.getenv("DB_NAME")
 )
 cursor = db.cursor()
 
-FLAG = "acc_ctf {h@rd_w0rk_p@ys}"
+FLAG = "acc_ctf {h@rd_w0rk_p@ys}"  # Your flag
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -23,12 +22,15 @@ def index():
 
     if request.method == "POST":
         user_id = request.form["user_id"]
+
+        # 🚨 VULNERABLE SQL QUERY 🚨
         query = f"SELECT first_name, last_name FROM users WHERE id='{user_id}'"
-        print(f"Executing Query: {query}")
+        print(f"Executing Query: {query}")  # Debugging
 
         try:
             cursor.execute(query)
             users = cursor.fetchall()
+
             if len(users) > 1:
                 for user in users:
                     if user[0] == "acc_ctf" and user[1] == "{h@rd_w0rk_p@ys}":
@@ -40,5 +42,4 @@ def index():
     return render_template("index.html", users=users, error=error)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5000)
