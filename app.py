@@ -1,19 +1,40 @@
 import os
 from flask import Flask, render_template, request
 import MySQLdb
+from dotenv import load_dotenv
+
+# Load environment variables from .env file (if it exists)
+load_dotenv()
 
 app = Flask(__name__)
 
-# Database connection using environment variables
-db = MySQLdb.connect(
-    host=os.getenv("DB_HOST"),
-    user=os.getenv("DB_USER"),
-    passwd=os.getenv("DB_PASS"),
-    db=os.getenv("DB_NAME"),
-    port=int(os.getenv("DB_PORT"))  # Convert port to integer
-)
+# Get environment variables
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASS = os.getenv("DB_PASS", "")  # Empty password
+DB_NAME = os.getenv("DB_NAME", "ctf_db")
+DB_PORT = int(os.getenv("DB_PORT", "3306"))  # Default 3306
 
-cursor = db.cursor()
+print("DB_HOST:", DB_HOST)
+print("DB_USER:", DB_USER)
+print("DB_PASS:", DB_PASS)
+print("DB_NAME:", DB_NAME)
+print("DB_PORT:", DB_PORT)
+
+# Database connection
+try:
+    db = MySQLdb.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        passwd=DB_PASS,
+        db=DB_NAME,
+        port=DB_PORT
+    )
+    cursor = db.cursor()
+    print("✅ Database connected successfully!")
+except MySQLdb.Error as e:
+    print(f"❌ Database connection failed: {e}")
+    exit(1)  # Stop execution if DB connection fails
 
 FLAG = "acc_ctf {h@rd_w0rk_p@ys}"  # Your flag
 
@@ -25,7 +46,7 @@ def index():
     if request.method == "POST":
         user_id = request.form["user_id"]
 
-        # 🚨 VULNERABLE SQL QUERY 🚨
+        # 🚨 SQL Injection Vulnerability for CTF Purposes 🚨
         query = f"SELECT first_name, last_name FROM users WHERE id='{user_id}'"
         print(f"Executing Query: {query}")  # Debugging
 
@@ -33,7 +54,7 @@ def index():
             cursor.execute(query)
             users = cursor.fetchall()
 
-            if len(users) > 1:
+            if users:
                 for user in users:
                     if user[0] == "acc_ctf" and user[1] == "{h@rd_w0rk_p@ys}":
                         error = FLAG
