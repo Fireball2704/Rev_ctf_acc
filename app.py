@@ -44,7 +44,7 @@ def index():
     error = None
 
     if request.method == "POST":
-        user_id = request.form["user_id"]
+        user_id = request.form.get("user_id")  # Use .get() to avoid KeyError
 
         # 🚨 SQL Injection Vulnerability for CTF Purposes 🚨
         query = f"SELECT first_name, last_name FROM users WHERE id='{user_id}'"
@@ -60,9 +60,8 @@ def index():
                         error = FLAG
                         break
         except MySQLdb.Error as e:
-         error = f"SQL Error: {e}"
-         print(error)  # Debugging
-
+            error = f"SQL Error: {e}"
+            print(error)  # Debugging
 
     return render_template("index.html", users=users, error=error)
 
